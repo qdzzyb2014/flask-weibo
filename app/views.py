@@ -41,7 +41,7 @@ def index(page = 1):
         db.session.commit()
         flash('Your post is now live!')
         return redirect(url_for('index'))
-    posts = g.user.followed_posts().paginate(page, POSTS_PER_PAGE, False)
+    posts = g.user.followed_posts()#.paginate(page, POSTS_PER_PAGE, False)
     return render_template('index.html',
         title = 'Home',
         form = form,
@@ -56,7 +56,7 @@ def login():
         user = User.login_check(request.form.get('user_name'),
                                 request.form.get('password'))
         if user:
-            login_user()
+            login_user(user)
             user.last_seen = datetime.utcnow()
             try:
                 db.session.add(user)
@@ -67,7 +67,7 @@ def login():
             
             flash('Your name:' + request.form.get('user_name'))
             flash('remember_me?' + str(request.form.get('remember_me')))
-            return redirect(url_for('users', user_id = current_user.id))
+            return redirect(url_for('index'))
         else:
             flash('Login faild, Invalid name or password!')
             return redirect('/login')

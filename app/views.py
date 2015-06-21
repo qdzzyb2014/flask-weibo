@@ -191,3 +191,31 @@ def search_results(query):
         query = query,
         results = results)
 
+@app.route('/sign-up', methods = ['GET', 'POST'])
+def sign_up():
+    form = SignUpForm()
+    user = User()
+    if form.validate_on_submit():
+        user_name = request.form.get('user_name')
+        password = request.form.get('password')
+        user_email = request.form.get('user_email')
+
+        register_check = User.query.filter(db.or_(
+            User.nickname == user_name, User.email == user_email
+            )).first()
+        if register_check:
+            flash("error: the user's name or email already exists.")
+            return redirect('/sign-up')
+
+        if len(user_name) and len(user_email):
+            user.nickname = user_name
+            user.password = password
+            user.email = user_email
+            user.role = ROLE_USER
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except:
+                flash('The Database error!')
+                return redirect('/sign-up')
+    return render_template('sign_up.html', form = form)

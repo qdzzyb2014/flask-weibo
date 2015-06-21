@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from app import app, db, lm, oid
-from forms import LoginForm, EditForm, PostForm, SearchForm
+from app import app, db, lm,oid
+from forms import LoginForm, EditForm, PostForm, SearchForm, SignUpForm
 from models import User, ROLE_USER, ROLE_ADMIN, Post
 from datetime import datetime
 from emails import follower_notification
@@ -48,18 +48,35 @@ def index(page = 1):
         posts = posts)
 
 @app.route('/login', methods = ['GET', 'POST'])
-@oid.loginhandler
 def login():
     if g.user is not None and g.user.is_authenticated():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        session['remember_me'] = form.remember_me.data
-        return oid.try_login(form.openid.data, ask_for = ['nickname', 'email'])
-    return render_template('login.html', 
-        title = 'Sign In',
-        form = form,
-        providers = app.config['OPENID_PROVIDERS'])
+        user = User.login_check(request.form.get('user_name'),
+                                request.form.get('password'))
+        if user:
+            login_user()
+            user.last_seen = datetime.utcnow()
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except:
+                flash('The Database error!')
+                return redirect('/login')
+            
+            flash('Your name:' + request.form.get('user_name'))
+            flash('remember_me?' + str(request.form.get('remember_me')))
+            return redirect(url_for('users', user_id = current_user.id))
+        else:
+            flash('Login faild, Invalid name or password!')
+            return redirect('/login')
+
+    return render_template(
+        'login.html',
+        title = 'Sign in',
+        form = form
+        )
 
 @oid.after_login
 def after_login(resp):

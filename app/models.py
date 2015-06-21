@@ -1,3 +1,4 @@
+# coding=utf-8
 from hashlib import md5
 from app import db
 from app import app
@@ -14,11 +15,14 @@ followers = db.Table('followers',
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     nickname = db.Column(db.String(64), unique = True)
+    password = db.Column(db.String(128))
     email = db.Column(db.String(120), index = True, unique = True)
     role = db.Column(db.SmallInteger, default = ROLE_USER)
     posts = db.relationship('Post', backref = 'author', lazy = 'dynamic')
+
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime)
+
     followed = db.relationship('User', 
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
@@ -67,6 +71,7 @@ class User(db.Model):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
     def followed_posts(self):
+        #连接 过滤 排序
         return Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
         
     def __repr__(self):

@@ -2,23 +2,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Sign In</h1>
-<form action="" method="post" name="login">
-    {{form.hidden_tag()}}
-    <p>
-        Please enter your name:<br>
+{% include 'flash.html' %}
+<div class="well">
+    <h3>Sign In</h3>
+    <form class="form" action="" method="post" name="login">
+        {{form.hidden_tag()}}
+        <div class="help-block">Please enter your name:</div>
         {{form.user_name(size=15)}}
         {% for error in form.errors.user_name%}
         <span style="color: red;">[{{error}}]</span>
         {% endfor %}<br>
-    </p>
-    <p>
-        Please enter your password:<br>
+        <div class="help-block">Please enter your password:</div>
         {{form.password(size=15)}}
         {% for error in form.errors.password %}
         <span style="color: red;">[{{error}}]</span>
         {% endfor %}
-    <p>{{form.remember_me}} Remember Me</p>
-    <p><input type="submit" value="Sign In"></p>
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox" for="remember_me">
+                {{form.remember_me}} Remember Me
+            </label>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input class="btn btn-primary" type="submit" value="Sign In">
+        </div>
+    </div>
 </form>
+</div>
 {% endblock %}

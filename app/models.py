@@ -54,6 +54,15 @@ class User(db.Model):
     def get_id(self):
         return unicode(self.id)
 
+    @classmethod
+    def login_check(cls, user_name, password):
+        user = cls.query.filter(
+            db.and_(User.nickname == user_name, User.password == password)
+        ).first()
+        if not user:
+            return None
+        return user
+
     def avatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
         

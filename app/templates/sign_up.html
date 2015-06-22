@@ -1,23 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<form action="/sign-up", method="POST" name="sign_up">
-    {{ form.hidden_tag() }}
-    <p>Nick name: <br>{{ form.user_name }}</p>
-    {% for error in form.errors.user_name %}
-    <p style="color:red;">[-] {{ error }}</p>
-    {% endfor %}
-    <p>Password: <br>{{ form.password }}</p>
-    {% for error in form.errors.password %}
-    <p style="color:red;">[-]{{ error }}</p>
-    {% endfor %}
-    <p>E-mail:<br> {{ form.user_email }}</p>
-    {% for error in form.errors.user_email %}
-    <p style="color:red;">[-] {{ error }}</p>
-    {% endfor %}
-
-    <p><input type="submit" value="注册"</p>
-</form>
-
+{% include 'flash.html' %}
+<div class="well">
+    <form class="form" action="/sign-up", method="post" name="sign_up">
+      <div class="controls">
+        <h3>Sign Up</h3>
+      </div>
+      <div class="control-group">
+        {{ form.hidden_tag() }}
+        <label class="control-label" for="inputNickname">Nick name:</label>
+        <div class="controls">
+        {{ form.user_name }}
+        </div>
+        {% for error in form.errors.user_name %}
+        <p style="color:red;">[-] {{ error }}</p>
+        {% endfor %}
+      </div>
+      <div class="control-group">
+          <label class="control-label" for="inputPassword">Password:</label> 
+        <div class="controls">
+        {{ form.password }}
+        </div>
+        {% for error in form.errors.password %}
+        <p style="color:red;">[-]{{ error }}</p>
+        {% endfor %}
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="inputEmail">Email:</label> 
+        <div class="controls">
+        {{ form.user_email }}
+        </div>
+        {% for error in form.errors.user_email %}
+        <p style="color:red;">[-] {{ error }}</p>
+        {% endfor %}
+      </div>
+      <div class="control-group">
+        <div class="controls">
+            <input class="btn btn-primary" type="submit" value="Sign Up">
+        </div>
+      </div>
+    </form>
+</div>
 {% endblock %}

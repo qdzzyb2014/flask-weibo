@@ -59,6 +59,7 @@ class User(db.Model):
         user = cls.query.filter(
             db.and_(User.nickname == user_name, User.password == password)
         ).first()
+        #print user.id, user.nickname
         if not user:
             return None
         return user
@@ -81,7 +82,8 @@ class User(db.Model):
 
     def followed_posts(self):
         #连接 过滤 排序
-        return Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
+        return Post.query.join(followers, 
+                (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
 
 
         

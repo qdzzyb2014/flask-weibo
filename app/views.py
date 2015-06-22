@@ -41,11 +41,11 @@ def index(page = 1):
         db.session.commit()
         flash('Your post is now live!')
         return redirect(url_for('index'))
-    posts = g.user.followed_posts()#.paginate(page, POSTS_PER_PAGE, False)
+    pagination = g.user.followed_posts().paginate(page, POSTS_PER_PAGE, False)
     return render_template('index.html',
         title = 'Home',
         form = form,
-        posts = posts)
+        posts = pagination)
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -65,8 +65,7 @@ def login():
                 flash('The Database error!')
                 return redirect('/login')
             
-            flash('Your name:' + request.form.get('user_name'))
-            flash('remember_me?' + str(request.form.get('remember_me')))
+            flash("Welcome!")
             return redirect(url_for('index'))
         else:
             flash('Login faild, Invalid name or password!')
@@ -78,31 +77,9 @@ def login():
         form = form
         )
 
-@oid.after_login
-def after_login(resp):
-    if resp.email is None or resp.email == "":
-        flash('Invalid login. Please try again.')
-        return redirect(url_for('login'))
-    user = User.query.filter_by(email = resp.email).first()
-    if user is None:
-        nickname = resp.nickname
-        if nickname is None or nickname == "":
-            nickname = resp.email.split('@')[0]
-        nickname = User.make_unique_nickname(nickname)
-        user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        db.session.add(user)
-        db.session.commit()
-        # make the user follow him/herself
-        db.session.add(user.follow(user))
-        db.session.commit()
-    remember_me = False
-    if 'remember_me' in session:
-        remember_me = session['remember_me']
-        session.pop('remember_me', None)
-    login_user(user, remember = remember_me)
-    return redirect(request.args.get('next') or url_for('index'))
 
 @app.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
@@ -115,7 +92,7 @@ def user(nickname, page = 1):
     if user == None:
         flash('User ' + nickname + ' not found.')
         return redirect(url_for('index'))
-    posts = user.posts.paginate(page, POSTS_PER_PAGE, False)
+    posts = user.posts.order_by(db.desc(Post.timestamp)).paginate(page, POSTS_PER_PAGE, False)
     return render_template('user.html',
         user = user,
         posts = posts)
@@ -214,8 +191,12 @@ def sign_up():
             user.role = ROLE_USER
             try:
                 db.session.add(user)
+                db.session.add(user.follow(user))
                 db.session.commit()
             except:
                 flash('The Database error!')
                 return redirect('/sign-up')
+
+            flash('Sign up successful!')
+            return redirect('/index')
     return render_template('sign_up.html', form = form)
